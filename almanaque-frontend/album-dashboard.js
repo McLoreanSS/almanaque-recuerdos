@@ -181,21 +181,21 @@ document.getElementById("savePhoto").addEventListener("click", async function() 
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
     
-    const savedPhoto = await response.json();
-    console.log("✅ Foto guardada exitosamente:", savedPhoto);
-    
-    // 1. Limpiar formulario
-    document.getElementById("image").value = "";
-    document.getElementById("year").value = "";
-    document.getElementById("date").value = "";
-    document.getElementById("text").value = "";
-    
-    // 2. Ocultar editor
-    editor.classList.add("hidden");
-    editToggle.textContent = "✏️ Modo edición";
-    
-    // 3. Mostrar mensaje de éxito
-    alert(`¡Recuerdo guardado con éxito! 🎉\nAño: ${savedPhoto.year}`);
+   // Busca esto en la función savePhoto (línea ~178):
+const savedPhoto = await response.json();
+console.log("✅ Foto guardada exitosamente:", savedPhoto);
+
+// Y cámbialo por:
+const result = await response.json();
+console.log("✅ Respuesta del servidor:", result);
+
+// Verificar si fue exitoso
+if (!result.success && result.success !== undefined) {
+  throw new Error(result.message || "Error del servidor");
+}
+
+const savedPhoto = result;
+console.log("✅ Foto guardada exitosamente:", savedPhoto);
     
     // 4. Agregar la foto inmediatamente al gallery
     addPhotoToGallery(savedPhoto);
