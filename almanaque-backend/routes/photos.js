@@ -17,20 +17,26 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST new photo
+// POST new photo - VERSIÓN CORREGIDA
 router.post("/", upload.single("image"), async (req, res) => {
   console.log("📤 POST /api/photos - Upload started");
   
   try {
     const { year, date, text } = req.body;
 
+    // Validar que haya archivo
     if (!req.file) {
       console.error("❌ No file uploaded");
       return res.status(400).json({ message: "Se requiere una imagen" });
     }
 
-    console.log("📁 File uploaded to Cloudinary:", req.file.path);
+    console.log("📁 File uploaded to Cloudinary:", {
+      path: req.file.path,
+      filename: req.file.filename,
+      size: req.file.size
+    });
 
+    // Crear nueva foto
     const photo = new Photo({
       imageUrl: req.file.path,
       year: year || "Sin año",
@@ -38,21 +44,55 @@ router.post("/", upload.single("image"), async (req, res) => {
       text: text || "",
     });
 
+    console.log("💾 Guardando en MongoDB...");
+    
+    // GUARDAR y esperar a que termine
     await photo.save();
-    console.log(`✅ Photo saved to MongoDB: ${photo._id}`);
     
-    res.status(201).json(photo);
+    console.log(`✅ Photo saved successfully:`, {
+      id: photo._id,
+      imageUrl: photo.imageUrl,
+      year: photo.year
+    });
+
+    // IMPORTANTE: Devolver la foto guardada
+    res.status(201).json({
+      _id: photo._id,
+      imageUrl: photo.imageUrl,
+      year: photo.year,
+      date: photo.date,
+      text: photo.text,
+      createdAt: photo.createdAt,
+      updatedAt: photo.updatedAt,
+      success: true,
+      message: "Foto guardada correctamente"
+    });
+
   } catch (error) {
-    console.error("❌ Error uploading photo:", error);
+    console.error("❌ Error completo al subir foto:", error);
+    console.error("❌ Stack trace:", error.stack);
     
-    if (error.message.includes('cloudinary')) {
+    // Error de Cloudinary
+    if (error.message.includes('cloudinary') || error.message.includes('Invalid')) {
       return res.status(500).json({ 
-        message: "Error de Cloudinary",
+        success: false,
+        message: "Error de Cloudinary. Verifica las credenciales.",
         error: error.message 
       });
     }
     
+    // Error de MongoDB
+    if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      return res.status(500).json({ 
+        success: false,
+        message: "Error de base de datos. Verifica la conexión a MongoDB.",
+        error: error.message 
+      });
+    }
+    
+    // Error general
     res.status(500).json({ 
+      success: false,
       message: "Error al subir foto", 
       error: error.message
     });
@@ -65,13 +105,22 @@ router.delete("/:id", async (req, res) => {
   try {
     const photo = await Photo.findByIdAndDelete(req.params.id);
     if (!photo) {
-      return res.status(404).json({ message: "Foto no encontrada" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Foto no encontrada" 
+      });
     }
     console.log(`✅ Photo deleted: ${req.params.id}`);
-    res.json({ message: "Foto eliminada correctamente" });
+    res.json({ 
+      success: true,
+      message: "Foto eliminada correctamente" 
+    });
   } catch (error) {
     console.error("❌ Error deleting photo:", error);
-    res.status(500).json({ message: "Error al eliminar foto" });
+    res.status(500).json({ 
+      success: false,
+      message: "Error al eliminar foto" 
+    });
   }
 });
 
