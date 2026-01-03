@@ -4,7 +4,7 @@ const editor = document.getElementById("editor");
 
 // Cambia esto a tu URL de Render cuando hagas deploy
 // const API_URL = "https://tu-backend.onrender.com/api/photos";
-const API_URL = "https://almanaque-recuerdos-1.onrender.com/api/photos";
+const API_URL = "https://almanaque-recuerdos-2.onrender.com/api/photos";
 
 let editingId = null; // Para modo edición
 
