@@ -1,67 +1,75 @@
-import express from "express";
-import upload from "../config/multer.js";
-import Photo from "../models/Photo.js";
-
-const router = express.Router();
-
-// Obtener todas las fotos
-router.get("/", async (req, res) => {
-  try {
-    const photos = await Photo.find().sort({ createdAt: -1 });
-    res.json(photos);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener fotos" });
-  }
-});
-
-// Obtener una foto específica
-router.get("/:id", async (req, res) => {
-  try {
-    const photo = await Photo.findById(req.params.id);
-    if (!photo) {
-      return res.status(404).json({ message: "Foto no encontrada" });
-    }
-    res.json(photo);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener la foto" });
-  }
-});
-
-// Subir nueva foto
+// POST new photo
 router.post("/", upload.single("image"), async (req, res) => {
+  console.log("📤 POST /api/photos - Upload started");
+  
   try {
     const { year, date, text } = req.body;
 
+    // Verificar que haya archivo
     if (!req.file) {
+      console.error("❌ No file in request");
       return res.status(400).json({ message: "Se requiere una imagen" });
     }
 
-    const photo = new Photo({
-      imageUrl: req.file.path,
-      year,
-      date,
-      text,
+    console.log("📁 File info:", {
+      originalname: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      cloudinary: {
+        url: req.file.path,
+        public_id: req.file.filename,
+        format: req.file.format
+      }
     });
 
-    await photo.save();
-    res.status(201).json(photo);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al subir foto" });
-  }
-});
-
-// Eliminar foto
-router.delete("/:id", async (req, res) => {
-  try {
-    const photo = await Photo.findByIdAndDelete(req.params.id);
-    if (!photo) {
-      return res.status(404).json({ message: "Foto no encontrada" });
+    // Verificar que la URL de Cloudinary sea válida
+    if (!req.file.path || !req.file.path.includes('cloudinary.com')) {
+      console.error("❌ URL de Cloudinary inválida:", req.file.path);
+      return res.status(500).json({ 
+        message: "Error al subir imagen a Cloudinary",
+        receivedPath: req.file.path
+      });
     }
-    res.json({ message: "Foto eliminada correctamente" });
+
+    // Crear documento de foto
+    const photo = new Photo({
+      imageUrl: req.file.path,
+      cloudinaryId: req.file.filename, // Guardar también el ID de Cloudinary
+      year: year || "Sin año",
+      date: date || "",
+      text: text || "",
+    });
+
+    console.log("💾 Guardando en MongoDB...");
+    const savedPhoto = await photo.save();
+    
+    console.log("✅ Foto guardada exitosamente:", {
+      id: savedPhoto._id,
+      imageUrl: savedPhoto.imageUrl,
+      cloudinaryId: savedPhoto.cloudinaryId
+    });
+    
+    // Devolver la foto guardada
+    res.status(201).json(savedPhoto);
+    
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar foto" });
+    console.error("❌ Error completo al subir foto:", error);
+    
+    // Error específico de Cloudinary
+    if (error.message.includes('cloudinary') || error.message.includes('Invalid')) {
+      console.error("❌ Cloudinary error details:", error);
+      return res.status(500).json({ 
+        message: "Error de Cloudinary. Verifica las credenciales en Render.",
+        hint: "Revisa CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET",
+        error: error.message 
+      });
+    }
+    
+    // Error general
+    res.status(500).json({ 
+      message: "Error al subir foto", 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
+    });
   }
 });
-
-export default router;
