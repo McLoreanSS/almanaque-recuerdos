@@ -12,7 +12,7 @@ const app = express();
 // Configurar CORS
 app.use(cors({
   origin: [
-    'https://almanaque-frontend.onrender.com',
+    'https://almanaque-recuerdos-2.onrender.com',
     'https://almanaque-recuerdos-1.onrender.com',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
