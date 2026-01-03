@@ -181,21 +181,115 @@ document.getElementById("savePhoto").addEventListener("click", async function() 
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
     
-   // Busca esto en la función savePhoto (línea ~178):
-const savedPhoto = await response.json();
-console.log("✅ Foto guardada exitosamente:", savedPhoto);
-
-// Y cámbialo por:
-const result = await response.json();
-console.log("✅ Respuesta del servidor:", result);
-
-// Verificar si fue exitoso
-if (!result.success && result.success !== undefined) {
-  throw new Error(result.message || "Error del servidor");
-}
-
-const savedPhoto = result;
-console.log("✅ Foto guardada exitosamente:", savedPhoto);
+// Save photo - VERSIÓN CORREGIDA
+document.getElementById("savePhoto").addEventListener("click", async function() {
+  console.log("🎯 Botón Guardar clickeado");
+  
+  const imageFile = document.getElementById("image").files[0];
+  const year = document.getElementById("year").value.trim();
+  const date = document.getElementById("date").value.trim();
+  const text = document.getElementById("text").value.trim();
+  
+  // Validaciones
+  if (!imageFile) {
+    alert("Seleccioná una imagen");
+    return;
+  }
+  
+  if (!year) {
+    alert("Ingresá el año del recuerdo");
+    return;
+  }
+  
+  // Validar tipo de imagen
+  const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+  if (!validTypes.includes(imageFile.type)) {
+    alert("Formato no válido. Usá JPG, PNG o WebP.");
+    return;
+  }
+  
+  // Validar tamaño (5MB máximo)
+  if (imageFile.size > 5 * 1024 * 1024) {
+    alert("La imagen es muy grande. Máximo 5MB.");
+    return;
+  }
+  
+  // Botón loading state
+  const originalText = this.textContent;
+  this.textContent = "⏳ Subiendo...";
+  this.disabled = true;
+  
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  formData.append("year", year);
+  formData.append("date", date);
+  formData.append("text", text);
+  
+  try {
+    console.log("📤 Enviando imagen...");
+    
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: formData
+    });
+    
+    console.log("📥 Respuesta status:", response.status);
+    
+    // Obtener respuesta como texto primero para debug
+    const responseText = await response.text();
+    console.log("📥 Respuesta texto:", responseText);
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error("❌ Error parseando JSON:", e);
+      throw new Error(`Respuesta inválida del servidor: ${responseText.substring(0, 100)}`);
+    }
+    
+    console.log("✅ Respuesta parseada:", result);
+    
+    if (!response.ok) {
+      throw new Error(result.message || `Error ${response.status}`);
+    }
+    
+    // Verificar si fue exitoso
+    if (result.success === false) {
+      throw new Error(result.message || "Error del servidor");
+    }
+    
+    console.log("✅ Foto guardada exitosamente:", result);
+    
+    // 1. Limpiar formulario
+    document.getElementById("image").value = "";
+    document.getElementById("year").value = "";
+    document.getElementById("date").value = "";
+    document.getElementById("text").value = "";
+    
+    // 2. Ocultar editor
+    editor.classList.add("hidden");
+    editToggle.textContent = "✏️ Modo edición";
+    
+    // 3. Mostrar mensaje de éxito
+    alert(`¡Recuerdo guardado con éxito! 🎉\nAño: ${result.year}`);
+    
+    // 4. Agregar la foto inmediatamente al gallery
+    addPhotoToGallery(result);
+    
+    // 5. También recargar después de 2 segundos
+    setTimeout(() => {
+      loadPhotos();
+    }, 2000);
+    
+  } catch (error) {
+    console.error("❌ Error completo al guardar:", error);
+    alert(`Error al guardar: ${error.message}`);
+  } finally {
+    // Restaurar botón
+    this.textContent = originalText;
+    this.disabled = false;
+  }
+});
     
     // 4. Agregar la foto inmediatamente al gallery
     addPhotoToGallery(savedPhoto);
