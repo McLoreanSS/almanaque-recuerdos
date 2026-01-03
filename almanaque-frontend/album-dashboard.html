@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El almanaque de nuestras locuras</title>
+  <link rel="stylesheet" href="album-dashboard.css" />
+</head>
+<body>
+
+<header>
+  <h1>El almanaque de nuestras locuras</h1>
+</header>
+
+<div class="edit-toggle">
+  <button id="editToggle">✏️ Modo edición</button>
+</div>
+
+<section class="editor hidden" id="editor">
+  <input type="file" id="image" accept="image/*" />
+  <input type="text" id="year" placeholder="Año" />
+  <input type="text" id="date" placeholder="Fecha o etapa" />
+  <textarea id="text" placeholder="Texto del recuerdo"></textarea>
+  <button id="savePhoto">Guardar recuerdo</button>
+</section>
+
+<main class="gallery" id="gallery"></main>
+
+<script src="album-dashboard.js"></script>
+</body>
+</html>

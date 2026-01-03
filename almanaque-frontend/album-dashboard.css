@@ -1,0 +1,366 @@
+body {
+  margin: 0;
+  font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 40px 20px 20px;
+  background: linear-gradient(90deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: white;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2.5em;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  background: linear-gradient(45deg, #fff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.edit-toggle {
+  text-align: center;
+  margin: 30px auto;
+}
+
+#editToggle {
+  background: linear-gradient(45deg, #2d2d2d, #1a1a1a);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+#editToggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+}
+
+.editor {
+  max-width: 500px;
+  margin: 30px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.editor input,
+.editor textarea {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 14px;
+  border: 2px solid #eaeaea;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border 0.3s;
+}
+
+.editor input:focus,
+.editor textarea:focus {
+  outline: none;
+  border-color: #2d2d2d;
+}
+
+.editor textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.editor button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(45deg, #2d2d2d, #1a1a1a);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.editor button:hover {
+  background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+  transform: translateY(-1px);
+}
+
+.hidden {
+  display: none;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.photo-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.photo-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+}
+
+.photo-image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.photo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s;
+}
+
+.photo-card:hover .photo-image img {
+  transform: scale(1.05);
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.photo-card:hover .photo-overlay {
+  opacity: 1;
+}
+
+.delete-btn, .edit-btn {
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 5px;
+  transition: all 0.3s;
+}
+
+.delete-btn:hover {
+  background: #ff4757;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #2d2d2d;
+  color: white;
+}
+
+.photo-info {
+  padding: 20px;
+}
+
+.photo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.photo-header h3 {
+  margin: 0;
+  font-size: 1.4em;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.photo-date {
+  font-size: 14px;
+  color: #666;
+  background: #f5f5f5;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.photo-text {
+  color: #444;
+  line-height: 1.6;
+  margin: 15px 0;
+  font-size: 15px;
+}
+
+.photo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #888;
+}
+
+.photo-footer .edit-btn {
+  opacity: 0.8;
+  font-size: 14px;
+  border-radius: 15px;
+  padding: 5px 15px;
+  width: auto;
+  height: auto;
+}
+
+.photo-footer .edit-btn:hover {
+  opacity: 1;
+}
+
+/* Estados vacío y error */
+.empty-state, .error-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-icon, .error-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3, .error-state h3 {
+  color: #444;
+  margin: 0 0 10px;
+}
+
+.empty-state p, .error-state p {
+  color: #888;
+  max-width: 400px;
+  margin: 0 auto 25px;
+  line-height: 1.6;
+}
+
+.add-first-btn, .retry-btn {
+  background: linear-gradient(45deg, #2d2d2d, #1a1a1a);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.add-first-btn:hover, .retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Alertas */
+.alert-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  border-left: 4px solid #2d2d2d;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.alert-success {
+  border-left-color: #2ecc71;
+}
+
+.alert-error {
+  border-left-color: #e74c3c;
+}
+
+.alert-warning {
+  border-left-color: #f39c12;
+}
+
+.alert-info {
+  border-left-color: #3498db;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-close:hover {
+  color: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    padding: 15px;
+    gap: 15px;
+  }
+  
+  header h1 {
+    font-size: 2em;
+  }
+  
+  .editor {
+    margin: 15px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+  
+  .photo-card {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,10 @@
+static_sites:
+  - type: web
+    name: almanaque-frontend
+    env: static
+    buildCommand: ""
+    staticPublishPath: "./frontend"
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.html"
