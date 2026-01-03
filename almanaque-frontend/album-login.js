@@ -11,7 +11,7 @@ loginBtn.addEventListener("click", async () => {
   }
 
   try {
-    const response = await fetch("https://almanaque-recuerdos-1.onrender.com/api/auth/login", {
+    const response = await fetch("https://almanaque-recuerdos-2.onrender.com/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
