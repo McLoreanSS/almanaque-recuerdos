@@ -9,31 +9,30 @@ connectDB();
 
 const app = express();
 
-// Configurar CORS
+// CORS config
 app.use(cors({
   origin: [
-    'https://almanaque-recuerdos-2.onrender.com',
+    'https://almanaque-frontend.onrender.com',
     'https://almanaque-recuerdos-1.onrender.com',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:3000'
   ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
 
 app.use(express.json());
 
-// Rutas de la API
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/photos", photoRoutes);
 
-// Ruta principal
+// Health check
 app.get("/", (req, res) => {
   res.send("Backend del Almanaque activo 🚀");
 });
 
-// Health check (IMPORTANTE para Render)
 app.get("/health", (req, res) => {
   res.json({ 
     status: "OK", 
@@ -42,13 +41,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Si no encuentra la ruta
-app.use((req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" });
-});
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
-  console.log(`📡 Health check: http://localhost:${PORT}/health`);
 });
