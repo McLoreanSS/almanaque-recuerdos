@@ -13,7 +13,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    'https://almanaque-frontend.onrender.com', // ← TU FRONTEND
+    'https://almanaque-recuerdos-2.onrender.com', // ← TU FRONTEND
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:3000'
