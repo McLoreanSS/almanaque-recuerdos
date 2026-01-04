@@ -24,9 +24,21 @@ app.use(cors({
 
 app.use(express.json());
 
-// Logging middleware
+// Logging middleware para TODAS las peticiones
 app.use((req, res, next) => {
-  console.log(`🌐 ${req.method} ${req.url}`);
+  const start = Date.now();
+  
+  // Interceptar la respuesta para loggear
+  const originalSend = res.send;
+  res.send = function(body) {
+    const duration = Date.now() - start;
+    console.log(`🌐 ${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+    return originalSend.call(this, body);
+  };
+  
+  console.log(`📥 ${req.method} ${req.url} - INICIANDO`);
+  console.log(`📦 Headers: ${req.headers['content-type'] || 'No content-type'}`);
+  
   next();
 });
 
@@ -74,28 +86,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Ruta de test directo
-app.get("/test-db", async (req, res) => {
-  try {
-    const db = mongoose.connection.db;
-    const collections = await db.listCollections().toArray();
-    const photosCount = await db.collection('photos').countDocuments();
-    
-    res.json({
-      success: true,
-      database: db.databaseName,
-      collections: collections.map(c => c.name),
-      photosCount: photosCount,
-      samplePhotos: await db.collection('photos').find().limit(3).toArray()
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-});
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
@@ -110,7 +100,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({
     success: false,
     message: "Error interno del servidor",
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: err.message
   });
 });
 
@@ -120,6 +110,5 @@ app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
   console.log(`🌐 URL: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
-  console.log(`📊 Test DB: http://localhost:${PORT}/test-db`);
   console.log("=".repeat(60));
 });
