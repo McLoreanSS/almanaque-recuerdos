@@ -1,28 +1,34 @@
 import "./config/env.js";
 import express from "express";
 import cors from "cors";
+import mongoose from "mongoose";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import photoRoutes from "./routes/photos.js";
+
+console.log("=".repeat(60));
+console.log("🚀 INICIANDO SERVIDOR DEL ALMANAQUE");
+console.log("=".repeat(60));
 
 connectDB();
 
 const app = express();
 
-// Configurar CORS
+// Configurar CORS amplio para debug
 app.use(cors({
-  origin: [
-    'https://almanaque-frontend.onrender-2.com',
-    'https://almanaque-recuerdos-1.onrender.com',
-    'http://localhost:5500',
-    'http://127.0.0.1:5500',
-    'http://localhost:3000'
-  ],
+  origin: '*', // Temporalmente permitir todos
   credentials: true,
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
 
 app.use(express.json());
+
+// Logging middleware
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.url}`);
+  next();
+});
 
 // Rutas de la API
 app.use("/api/auth", authRoutes);
@@ -30,26 +36,90 @@ app.use("/api/photos", photoRoutes);
 
 // Ruta principal
 app.get("/", (req, res) => {
-  res.send("Backend del Almanaque activo 🚀");
-});
-
-// Health check
-app.get("/health", (req, res) => {
-  res.json({ 
-    status: "OK", 
-    timestamp: new Date().toISOString(),
-    service: "almanaque-backend",
-    dbState: mongoose.connection.readyState // 1 para conectado
+  res.json({
+    message: "Backend del Almanaque activo 🚀",
+    version: "1.0.0",
+    endpoints: {
+      health: "/health",
+      photos: "/api/photos",
+      auth: "/api/auth/login"
+    },
+    database: {
+      connected: mongoose.connection.readyState === 1,
+      name: mongoose.connection.db?.databaseName || "Desconocida"
+    }
   });
 });
 
-// Manejo de errores global
+// Health check detallado
+app.get("/health", (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  res.json({ 
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    service: "almanaque-backend",
+    database: {
+      state: dbState,
+      stateText: dbStates[dbState] || 'unknown',
+      name: mongoose.connection.db?.databaseName || "N/A",
+      host: mongoose.connection.host || "N/A"
+    }
+  });
+});
+
+// Ruta de test directo
+app.get("/test-db", async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections().toArray();
+    const photosCount = await db.collection('photos').countDocuments();
+    
+    res.json({
+      success: true,
+      database: db.databaseName,
+      collections: collections.map(c => c.name),
+      photosCount: photosCount,
+      samplePhotos: await db.collection('photos').find().limit(3).toArray()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Ruta no encontrada: ${req.method} ${req.url}`
+  });
+});
+
+// Error handler global
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Algo salió mal en el servidor!' });
+  console.error("❌ ERROR GLOBAL NO MANEJADO:", err);
+  res.status(500).json({
+    success: false,
+    message: "Error interno del servidor",
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
+  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Test DB: http://localhost:${PORT}/test-db`);
+  console.log("=".repeat(60));
 });
