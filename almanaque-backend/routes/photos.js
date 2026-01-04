@@ -1,5 +1,5 @@
 import express from "express";
-import { upload } from "../config/multer.js";  // <-- Importa el objeto upload, no uploadWithLogging
+import upload from "../config/multer.js";  // <-- Importa el default export
 import Photo from "../models/Photo.js";
 import mongoose from "mongoose";
 
@@ -59,59 +59,43 @@ router.get("/", checkDB, async (req, res) => {
   }
 });
 
-// POST new photo - CON LOGGING Y upload.single
+// POST new photo - VERSIÓN SIMPLIFICADA
 router.post("/", checkDB, (req, res, next) => {
   console.log("=".repeat(60));
-  console.log("🟢 POST /api/photos - ANTES DE MULTER");
+  console.log("🟢 POST /api/photos - INICIANDO");
   console.log("=".repeat(60));
-  console.log("📦 Headers recibidos:", {
-    'content-type': req.headers['content-type'],
-    'content-length': req.headers['content-length']
-  });
-  console.log("📦 Body keys (antes de multer):", Object.keys(req.body));
+  console.log("📦 Headers:", req.headers['content-type']);
   next();
-}, upload.single("image"), async (req, res) => {  // <-- Usa upload.single normalmente
-  console.log("=".repeat(60));
-  console.log("🟢 POST /api/photos - DESPUÉS DE MULTER");
-  console.log("=".repeat(60));
+}, upload.single("image"), async (req, res) => {
   
   try {
-    // 1. VERIFICAR SI MULTER PROCESÓ EL ARCHIVO
-    console.log("🔍 Verificando si multer procesó el archivo...");
+    console.log("✅ Multer completado, verificando archivo...");
     
+    // 1. VERIFICAR ARCHIVO
     if (!req.file) {
-      console.error("❌ ERROR: Multer no procesó ningún archivo");
-      console.error("❌ Posibles causas:");
-      console.error("   1. El campo no se llama 'image'");
-      console.error("   2. El archivo es muy grande");
-      console.error("   3. Tipo de archivo no permitido");
-      console.error("   4. Error de Cloudinary");
-      
+      console.error("❌ ERROR: No se recibió archivo después de multer");
       return res.status(400).json({
         success: false,
-        message: "No se pudo procesar la imagen",
-        details: "Multer no recibió archivo",
-        requiredField: "image (form-data field)"
+        message: "No se recibió ninguna imagen",
+        hint: "Asegúrate de enviar el campo 'image' en form-data"
       });
     }
     
-    console.log("✅ Multer procesó el archivo:", {
-      fieldname: req.file.fieldname,
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
+    console.log("📁 Archivo recibido:", {
+      name: req.file.originalname,
       size: req.file.size,
-      cloudinaryUrl: req.file.path
+      url: req.file.path
     });
     
-    // 2. EXTRAER DATOS DEL FORMULARIO
+    // 2. EXTRAER DATOS
     const year = req.body.year ? String(req.body.year).trim() : "Sin año";
     const date = req.body.date ? String(req.body.date).trim() : "";
     const text = req.body.text ? String(req.body.text).trim() : "";
     
-    console.log("📝 Datos del formulario:", { year, date, text });
+    console.log("📝 Datos:", { year, date, text });
     
-    // 3. CREAR Y GUARDAR DOCUMENTO
-    console.log("💾 Creando documento Photo...");
+    // 3. GUARDAR EN MONGODB
+    console.log("💾 Guardando en MongoDB...");
     
     const photo = new Photo({
       imageUrl: req.file.path,
@@ -120,26 +104,18 @@ router.post("/", checkDB, (req, res, next) => {
       text: text
     });
     
-    console.log("💾 Intentando guardar en MongoDB...");
     const savedPhoto = await photo.save();
     
-    console.log("✅ Documento guardado exitosamente:", {
+    console.log("✅ Documento guardado:", {
       id: savedPhoto._id,
       year: savedPhoto.year
     });
     
-    // 4. RESPONDER CON ÉXITO
+    // 4. RESPONDER
     res.status(201).json({
       success: true,
       message: "Foto guardada correctamente",
-      photo: {
-        _id: savedPhoto._id,
-        imageUrl: savedPhoto.imageUrl,
-        year: savedPhoto.year,
-        date: savedPhoto.date,
-        text: savedPhoto.text,
-        createdAt: savedPhoto.createdAt
-      }
+      photo: savedPhoto
     });
     
   } catch (error) {
@@ -175,14 +151,9 @@ router.delete("/:id", checkDB, async (req, res) => {
     
     console.log(`✅ Foto eliminada: ${req.params.id}`);
     
-    // Contar fotos restantes
-    const remaining = await Photo.countDocuments();
-    console.log(`📊 Fotos restantes en DB: ${remaining}`);
-    
     res.json({
       success: true,
-      message: "Foto eliminada correctamente",
-      remaining: remaining
+      message: "Foto eliminada correctamente"
     });
     
   } catch (error) {
