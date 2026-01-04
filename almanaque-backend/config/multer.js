@@ -13,6 +13,7 @@ const storage = new CloudinaryStorage({
   },
 });
 
+// Crear el objeto upload de multer
 const upload = multer({ 
   storage,
   limits: {
@@ -30,7 +31,7 @@ const upload = multer({
   }
 });
 
-// Middleware de logging para multer
+// Crear una versión con logging
 const uploadWithLogging = (req, res, next) => {
   console.log("=".repeat(40));
   console.log("🖼️  MULTER - Procesando upload...");
@@ -40,12 +41,25 @@ const uploadWithLogging = (req, res, next) => {
   upload.single("image")(req, res, (err) => {
     if (err) {
       console.error("❌ ERROR EN MULTER:", err.message);
+      console.error("❌ Error stack:", err.stack);
     } else {
       console.log("✅ Multer completado");
       console.log("Archivo procesado:", req.file ? "Sí" : "No");
+      if (req.file) {
+        console.log("📁 File details:", {
+          fieldname: req.file.fieldname,
+          originalname: req.file.originalname,
+          size: req.file.size,
+          path: req.file.path
+        });
+      }
     }
     next(err);
   });
 };
 
+// Exportar AMBOS: el objeto upload original y la versión con logging
+export { upload, uploadWithLogging };
+
+// Exportar uploadWithLogging como default para compatibilidad
 export default uploadWithLogging;
