@@ -9,10 +9,10 @@ connectDB();
 
 const app = express();
 
-// CORS config
+// Configurar CORS
 app.use(cors({
   origin: [
-    'https://almanaque-recuerdos-2.onrender.com',
+    'https://almanaque-frontend.onrender-2.com',
     'https://almanaque-recuerdos-1.onrender.com',
     'http://localhost:5500',
     'http://127.0.0.1:5500',
@@ -24,21 +24,29 @@ app.use(cors({
 
 app.use(express.json());
 
-// Routes
+// Rutas de la API
 app.use("/api/auth", authRoutes);
 app.use("/api/photos", photoRoutes);
 
-// Health check
+// Ruta principal
 app.get("/", (req, res) => {
   res.send("Backend del Almanaque activo 🚀");
 });
 
+// Health check
 app.get("/health", (req, res) => {
   res.json({ 
     status: "OK", 
     timestamp: new Date().toISOString(),
-    service: "almanaque-backend"
+    service: "almanaque-backend",
+    dbState: mongoose.connection.readyState // 1 para conectado
   });
+});
+
+// Manejo de errores global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Algo salió mal en el servidor!' });
 });
 
 const PORT = process.env.PORT || 3000;
