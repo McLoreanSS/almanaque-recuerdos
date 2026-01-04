@@ -4,26 +4,27 @@ const photoSchema = new mongoose.Schema(
   {
     imageUrl: {
       type: String,
-      required: true
+      required: [true, "La URL de la imagen es obligatoria"],
     },
     year: {
       type: String,
-      default: "Sin año"
+      default: "Sin año",
     },
     date: {
       type: String,
-      default: ""
+      default: "",
     },
     text: {
       type: String,
-      default: ""
+      default: "",
     },
   },
-  { 
-    timestamps: true, // Esto agrega createdAt y updatedAt automáticamente
-    versionKey: false // Elimina el campo __v
-  }
+  { timestamps: true }
 );
 
-// Asegúrate que el modelo esté exportado correctamente
-export default mongoose.model("Photo", photoSchema);
+// Agregar un índice para mejorar las búsquedas por año
+photoSchema.index({ year: 1 });
+
+const Photo = mongoose.model("Photo", photoSchema);
+
+export default Photo;
