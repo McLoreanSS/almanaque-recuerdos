@@ -1,5 +1,5 @@
 import express from "express";
-import upload from "../config/multer.js";
+import { upload } from "../config/multer.js";  // <-- Importa el objeto upload, no uploadWithLogging
 import Photo from "../models/Photo.js";
 import mongoose from "mongoose";
 
@@ -59,7 +59,7 @@ router.get("/", checkDB, async (req, res) => {
   }
 });
 
-// POST new photo - CON LOGGING ANTES/DESPUÉS DE MULTER
+// POST new photo - CON LOGGING Y upload.single
 router.post("/", checkDB, (req, res, next) => {
   console.log("=".repeat(60));
   console.log("🟢 POST /api/photos - ANTES DE MULTER");
@@ -70,7 +70,7 @@ router.post("/", checkDB, (req, res, next) => {
   });
   console.log("📦 Body keys (antes de multer):", Object.keys(req.body));
   next();
-}, upload.single("image"), async (req, res) => {
+}, upload.single("image"), async (req, res) => {  // <-- Usa upload.single normalmente
   console.log("=".repeat(60));
   console.log("🟢 POST /api/photos - DESPUÉS DE MULTER");
   console.log("=".repeat(60));
@@ -110,7 +110,7 @@ router.post("/", checkDB, (req, res, next) => {
     
     console.log("📝 Datos del formulario:", { year, date, text });
     
-    // 3. CREAR Y GUARDAR DOCUMENTO (SIMPLIFICADO PARA PRUEBA)
+    // 3. CREAR Y GUARDAR DOCUMENTO
     console.log("💾 Creando documento Photo...");
     
     const photo = new Photo({
