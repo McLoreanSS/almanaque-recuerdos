@@ -50,7 +50,7 @@ async function loadPhotos() {
         <div class="empty-state" style="grid-column: 1 / -1; text-align:center; padding:40px; color:#666;">
           <div style="font-size:60px; margin-bottom:20px;">📷</div>
           <h3>No hay recuerdos aún</h3>
-          <p>¡Agrega el primer recuerdo de vuestras locuras!</p>
+          <p>¡Agrega el primer recuerdo de nuestras locuras!</p>
           <button onclick="document.getElementById('editToggle').click()" 
                   style="margin-top:20px; padding:10px 20px; background:#2d2d2d; color:white; border:none; border-radius:20px; cursor:pointer;">
             ➕ Agregar primer recuerdo
